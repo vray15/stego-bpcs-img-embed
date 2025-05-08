@@ -1,27 +1,107 @@
-# 🖼️ BPCS Steganography
+# HƯỚNG DẪN THỰC HÀNH BÀI LAB STEGO-BPCS-IMG-EMBED
 
-**BPCS (Bit-Plane Complexity Segmentation)** là một kỹ thuật steganography tiên tiến cho phép ẩn thông tin bí mật trong ảnh mà không gây khác biệt rõ ràng về mặt thị giác. Phương pháp này khai thác các vùng có độ phức tạp cao trong ảnh (khó nhận ra bằng mắt thường) để nhúng thông điệp mà không làm giảm chất lượng ảnh.
-
----
-
-## 📘 Tài liệu tham khảo
-
-- Kawaguchi, Eiji, and Richard O. Eason. _"Principles and applications of BPCS steganography."_ Photonics East, 1999.
+Bài lab này hướng dẫn thực hiện giấu thông điệp vào ảnh sử dụng thuật toán BPCS (Bit-Plane Complexity Segmentation) trong môi trường ảo hóa Labtainer. Dưới đây là các bước chi tiết để thực hiện bài lab.
 
 ---
 
-## 🚀 Tính năng chính
+## Chuẩn bị môi trường
 
-- Giấu bất kỳ loại dữ liệu nào (text, ảnh, file nhị phân) vào ảnh PNG.
-- Tùy chỉnh ngưỡng độ phức tạp (alpha) để kiểm soát mức độ nhúng.
-- Giao diện dòng lệnh trực quan.
-- Dễ dàng tích hợp dưới dạng module Python.
+1. **Phần mềm cần thiết**:
+   - Phần mềm ảo hóa: VMWare Workstation.
+   - Máy ảo Labtainer được cấu hình kết nối internet.
+
+2. **Tải bài lab**:
+   - Mở terminal trong thư mục `/home/student/labtainer/labtainer-student`.
+   - Thực hiện lệnh:
+     ```
+     imodule https://github.com/vray15/stego-bpcs-img-embed/raw/refs/heads/master/imodule.tar
+     ```
+
+3. **Khởi tạo bài lab**:
+   - Chạy lệnh:
+     ```
+     labtainer -r stego-bpcs-img-embed
+     ```
+   - Nhập email sử dụng mã sinh viên khi được yêu cầu (dùng để chấm điểm).
 
 ---
 
-## 🔧 Cài đặt
+## Các nhiệm vụ cần thực hiện
 
-```bash
-git clone https://github.com/vray15/stego-bpcs-img-embed.git
-cd stego-bpcs-img-embed
-pip install -r requirements.txt
+### 1. Tiền xử lý dữ liệu
+
+#### a. Xử lý dữ liệu đầu vào với thông điệp
+- Mục tiêu: Chuyển chuỗi ký tự trong file `text.txt` thành chuỗi bit và lưu vào `message.txt`.
+- Thực hiện:
+  1. Đưa file `text.txt` vào thư mục `examples`.
+  2. Chỉnh sửa file `binary.py` để nhận đầu vào từ `text.txt`.
+  3. Chạy lệnh:
+     ```
+     python3 binary.py > message.txt
+     ```
+
+#### b. Xử lý dữ liệu đầu vào với ảnh
+- Mục tiêu: Kiểm tra độ nhiễu của ảnh `vessel.png` và xác định dung lượng tin ẩn có thể giấu.
+- Thực hiện:
+  1. Cài đặt các thư viện cần thiết:
+     ```
+     pip3 install numpy scipy matplotlib Pillow
+     ```
+  2. Kiểm tra dung lượng và độ nhiễu của ảnh:
+     ```
+     python -m bpcs.bpcs capacity -i examples/vessel.png -a <ngưỡng phức tạp>
+     ```
+     (Thay `<ngưỡng phức tạp>` bằng giá trị alpha phù hợp, ví dụ: 0.3).
+
+---
+
+### 2. Giấu tin trong ảnh
+
+- Mục tiêu: Giấu thông điệp từ `message.txt` vào ảnh `vessel.png` sử dụng thuật toán BPCS.
+- Thực hiện:
+  - Chạy lệnh:
+    ```
+    python3 -m bpcs.bpcs encode -i examples/vessel.png -m examples/message.txt -a <alpha> -o output.png
+    ```
+    - `-i`: File ảnh đầu vào (`vessel.png`).
+    - `-m`: File chứa thông điệp (`message.txt`).
+    - `-a`: Ngưỡng phức tạp (alpha, ví dụ: 0.3).
+    - `-o`: File ảnh đầu ra sau khi giấu tin (`output.png`).
+
+---
+
+### 3. Kiểm tra ảnh đã giấu tin
+
+- Mục tiêu: Kiểm tra xem việc giấu tin có thành công hay không thông qua độ nhiễu và biểu đồ.
+- Thực hiện:
+  1. **Xem ảnh đã giấu**:
+     - Cài đặt công cụ `fim`:
+       ```
+       sudo apt update
+       sudo apt install fim
+       ```
+     - Xem ảnh:
+       ```
+       fim output.png
+       ```
+  2. **Kiểm tra độ nhiễu bằng biểu đồ**:
+     - Cài đặt thư viện GUI cho Python:
+       ```
+       sudo apt update
+       sudo apt install python3-tk
+       ```
+     - Vào thư mục `examples` và chỉnh sửa file `compare_hist.py` (bỏ comment phần đầu vào).
+     - Chạy lệnh:
+       ```
+       python3 compare_hist.py
+       ```
+     - Kết quả: Quan sát biểu đồ để thấy sự chênh lệch độ nhiễu. Nếu giao diện hiển thị “Da ma hoa”, giấu tin thành công.
+
+---
+
+### 4. Kết thúc bài lab
+
+- Kết thúc bài lab bằng lệnh:
+     ```
+       stoplab
+       ```
